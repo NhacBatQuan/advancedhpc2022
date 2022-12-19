@@ -12,5 +12,6 @@ Students are expected to:
 Student Info
 =======================
 
-* Name: MyName
+* Name: Nguyen Quoc Thong
+* ID: M21.ICT.010
 
