@@ -15,7 +15,7 @@ image = plt.imread("/home/mocavandao/Lab/lechonk.jpg")
 height, width = image.shape[0], image.shape[1]
 pixelCount = width * height
 blockSize = 64
-gridSize = math.floor(pixelCount) / blockSize
+gridSize = math.ceil(pixelCount) / blockSize
 reshaped_img = np.reshape(image, (height * width, 3))
 
 def rgbToGray(img):
@@ -26,14 +26,14 @@ def rgbToGray(img):
 #CPU time
 start =time.time()
 grayed = rgbToGray(image)
-print("CPU : ",abs(time.time()-start))
+print("CPU time : ",abs(time.time()-start))
 
 plt.imsave('test.png', image)
 plt.imsave('grayed.png', grayed, cmap = 'gray')
 
 devOutput = cuda.device_array((pixelCount), np.float64)
 devInput = cuda.to_device(reshaped_img)
-gridSize1 = math.floor(gridSize)
+gridSize1 = math.ceil(gridSize)
 
 @cuda.jit
 def grayscale(src, dst):
@@ -42,9 +42,8 @@ def grayscale(src, dst):
     dst[tidx] = g
 
 #GPU time
-start = time.time()
 grayscale[gridSize1, blockSize](devInput, devOutput)
-print("GPU: ", abs(time.time()-start))
+print("GPU time : ", abs(time.time()-start))
 
 hostOutput = devOutput.copy_to_host()
 hostOutput = np.reshape(hostOutput, (height, width))
@@ -56,12 +55,14 @@ timer = []
 blockSizes = [16, 32, 64, 128, 256, 512, 1024]
 for i in blockSizes:
     gridsize = pixelCount/i
-    gridsize1 = math.floor(gridSize)
+    gridsize1 = math.ceil(gridSize)
     start = time.time()
     grayscale[gridsize1, i](devInput, devOutput)
     stop = time.time()
     timer.append(abs(start-stop))
-    print(timer)
+    
+gputime = timer[2]
+print("GPU time : ", gputime)
 
 fig, ax = plt.subplots()
 ax.plot(blockSizes, timer)
