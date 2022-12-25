@@ -68,13 +68,34 @@ def blur(src, dst, fil):
     dst[tidx, tidy, 2 ] = b
 
 blur[gridSize, blockSize](devInput, devOutput,devFilter)
+start_nomemo = time.time()
 hostOutput = devOutput.copy_to_host()
+print("No memory shared time", abs(time.time()-start_nomemo))
 
 plt.imsave('blur_gpu.png',hostOutput)
 
+@cuda.jit
+def blurMemo(src,dst,fil):
+    memoFilter = cuda.shared.array((7, 7), np.uint8)
+    tidx = cuda.threadIdx.x + cuda.blockIdx.x * cuda.blockDim.x
+    tidy = cuda.threadIdx.y + cuda.blockIdx.y * cuda.blockDim.y
+    cuda.syncthreads()
 
+    r = 0
+    g = 0
+    b = 0
+    for i in (range(-3,4)):
+        for j in (range(-3,4)):
+            r= np.uint8(r + (src[tidx+i, tidy+j, 0]*fil[i, j]))
+            g= np.uint8(g + (src[tidx+i, tidy+j, 1]*fil[i, j]))
+            b= np.uint8(b + (src[tidx+i, tidy+j, 2]*fil[i, j]))
+  
+    dst[tidx, tidy, 0 ] = r
+    dst[tidx, tidy, 1 ] = g
+    dst[tidx, tidy, 2 ] = b
 
-
-
-
-
+blurMemo[gridSize, blockSize](devInput, devOutput,devFilter)
+start_memo = time.time()
+hostOutput = devOutput.copy_to_host()
+print("Memory shared time", abs(time.time()-start_memo))
+plt.imsave('blur_gpu_with_memo.png',hostOutput)
