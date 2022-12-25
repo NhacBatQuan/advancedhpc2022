@@ -60,7 +60,7 @@ plt.imsave('gpu_2d.png',hostOutput, cmap = 'gray')
 
 #GPU 1 dim image
 grayscale_1d[gridSize, blockSize](devInput1, devOutput1)
-hostOutput1 = devOutput.copy_to_host()
+hostOutput1 = devOutput1.copy_to_host()
 hostOutput1 = np.reshape(hostOutput1, (height, width, 3))
 plt.imsave('gpu_1d.png',hostOutput1, cmap = 'gray')
 
