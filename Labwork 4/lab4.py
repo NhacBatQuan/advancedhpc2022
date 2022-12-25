@@ -77,7 +77,6 @@ for i in blockSizes:
     stop1 = time.time()
     timer_1d.append(abs(start1-stop1))
 
-print(timer_1d)
 print(timer_2d)
 gputime_2d = timer_2d[2]
 gputime_1d = timer_1d[2]
